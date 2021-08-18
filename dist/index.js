@@ -3518,8 +3518,8 @@ function run() {
             const client = new github_1.GitHub(core.getInput('token', { required: true }));
             const format = core.getInput('format', { required: true });
             // Ensure that the format parameter is set properly.
-            if (format !== 'space-delimited' && format !== 'csv' && format !== 'json') {
-                core.setFailed(`Format must be one of 'string-delimited', 'csv', or 'json', got '${format}'.`);
+            if (format !== 'comma-separated' && format !== 'space-delimited' && format !== 'csv' && format !== 'json') {
+                core.setFailed(`Format must be one of 'comma-separated', 'string-delimited', 'csv', or 'json', got '${format}'.`);
             }
             // Debug log the payload.
             core.debug(`Payload keys: ${Object.keys(github_1.context.payload)}`);
@@ -3566,10 +3566,12 @@ function run() {
                     "Please submit an issue on this action's GitHub repo.");
             }
             // Ensure that the head commit is ahead of the base commit.
-            if (response.data.status !== 'ahead') {
-                core.setFailed(`The head commit for this ${github_1.context.eventName} event is not ahead of the base commit. ` +
-                    "Please submit an issue on this action's GitHub repo.");
-            }
+            //     if (response.data.status !== 'ahead') {
+            //       core.setFailed(
+            //         `The head commit for this ${context.eventName} event is not ahead of the base commit. ` +
+            //           "Please submit an issue on this action's GitHub repo."
+            //       )
+            //     }
             // Get the changed files from the response payload.
             const files = response.data.files;
             const all = [], added = [], modified = [], removed = [], renamed = [], addedModified = [];
@@ -3604,6 +3606,14 @@ function run() {
             // Format the arrays of changed files.
             let allFormatted, addedFormatted, modifiedFormatted, removedFormatted, renamedFormatted, addedModifiedFormatted;
             switch (format) {
+                case 'comma-separated':
+                    allFormatted = all.join(',');
+                    addedFormatted = added.join(',');
+                    modifiedFormatted = modified.join(',');
+                    removedFormatted = removed.join(',');
+                    renamedFormatted = renamed.join(',');
+                    addedModifiedFormatted = addedModified.join(',');
+                    break;
                 case 'space-delimited':
                     // If any of the filenames have a space in them, then fail the step.
                     for (const file of all) {
