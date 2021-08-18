@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import {context, GitHub} from '@actions/github'
 
-type Format = 'space-delimited' | 'csv' | 'json'
+type Format = 'comma-separated' | 'space-delimited' | 'csv' | 'json'
 type FileStatus = 'added' | 'modified' | 'removed' | 'renamed'
 
 async function run(): Promise<void> {
@@ -11,8 +11,8 @@ async function run(): Promise<void> {
     const format = core.getInput('format', {required: true}) as Format
 
     // Ensure that the format parameter is set properly.
-    if (format !== 'space-delimited' && format !== 'csv' && format !== 'json') {
-      core.setFailed(`Format must be one of 'string-delimited', 'csv', or 'json', got '${format}'.`)
+    if (format !== 'comma-separated' && format !== 'space-delimited' && format !== 'csv' && format !== 'json') {
+      core.setFailed(`Format must be one of 'comma-separated', 'string-delimited', 'csv', or 'json', got '${format}'.`)
     }
 
     // Debug log the payload.
@@ -75,12 +75,12 @@ async function run(): Promise<void> {
     }
 
     // Ensure that the head commit is ahead of the base commit.
-    if (response.data.status !== 'ahead') {
-      core.setFailed(
-        `The head commit for this ${context.eventName} event is not ahead of the base commit. ` +
-          "Please submit an issue on this action's GitHub repo."
-      )
-    }
+//     if (response.data.status !== 'ahead') {
+//       core.setFailed(
+//         `The head commit for this ${context.eventName} event is not ahead of the base commit. ` +
+//           "Please submit an issue on this action's GitHub repo."
+//       )
+//     }
 
     // Get the changed files from the response payload.
     const files = response.data.files
@@ -131,6 +131,14 @@ async function run(): Promise<void> {
       renamedFormatted: string,
       addedModifiedFormatted: string
     switch (format) {
+      case 'comma-separated':
+        allFormatted = all.join(',')
+        addedFormatted = added.join(',')
+        modifiedFormatted = modified.join(',')
+        removedFormatted = removed.join(',')
+        renamedFormatted = renamed.join(',')
+        addedModifiedFormatted = addedModified.join(',')
+        break
       case 'space-delimited':
         // If any of the filenames have a space in them, then fail the step.
         for (const file of all) {
